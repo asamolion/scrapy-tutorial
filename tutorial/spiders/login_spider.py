@@ -14,7 +14,6 @@ class LoginSpider(scrapy.Spider):
     start_urls = ['http://restframework.herokuapp.com/api-auth/login/']
 
     def parse(self, response):
-        os.remove('rest.json') 
         return scrapy.FormRequest.from_response(
             response,
             formdata={'username': 'aziz', 'password': 'aziz'},
@@ -22,6 +21,8 @@ class LoginSpider(scrapy.Spider):
         )
 
     def after_login(self, response):
+        # The API gives 200 OK as response code even after invalid login, 
+        # no choice but to use the following authentication method
         if str.encode("Username") in response.body:
             self.logger.error("Login failed")
             return
@@ -30,18 +31,9 @@ class LoginSpider(scrapy.Spider):
                               callback=self.parse_snippets)
 
     def parse_snippets(self, response):
-        f = open('rest.json', 'a')
-        div = response.xpath('//div[@class="response-info"]').extract_first()
-        div = re.sub('<b.*?>(.+?)</b>', '', div)
-        div = re.sub('<span.*?>.*|\n*</span>', '', div)
-        div = re.sub('<pre.*?>', '', div)
-        div = re.sub('</pre>', '', div)
-        div = re.sub('<div.*?>', '', div)
-        div = re.sub('</div>', '', div)
-        div = re.sub('<a.*?>', '', div)
-        div = re.sub('</a>', '', div)
-        json_data = div
-        f.write(json_data)
+        div = response.xpath('//div[@class="response-info"]/pre/text()').extract()
+        yield json.loads(' '.join(div))
         next_link = response.xpath(
             '//a[@aria-label="Next"]/@href').extract_first()
         yield response.follow(next_link, callback=self.parse_snippets)
+        

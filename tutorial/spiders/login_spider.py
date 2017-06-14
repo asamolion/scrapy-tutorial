@@ -21,7 +21,7 @@ class LoginSpider(scrapy.Spider):
         )
 
     def after_login(self, response):
-        # The API gives 200 OK as response code even after invalid login, 
+        # The API gives 200 OK as response code even after invalid login,
         # no choice but to use the following authentication method
         if str.encode("Username") in response.body:
             self.logger.error("Login failed")
@@ -31,9 +31,9 @@ class LoginSpider(scrapy.Spider):
                               callback=self.parse_snippets)
 
     def parse_snippets(self, response):
-        div = response.xpath('//div[@class="response-info"]/pre/text()').extract()
+        div = response.xpath(
+            '//div[@class="response-info"]/pre/text()').extract()
         yield json.loads(' '.join(div))
         next_link = response.xpath(
             '//a[@aria-label="Next"]/@href').extract_first()
         yield response.follow(next_link, callback=self.parse_snippets)
-        

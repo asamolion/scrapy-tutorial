@@ -9,3 +9,4 @@ Currently 3 spiders have been done.
 4. login_spider: Login spider that uses session management. 
 5. table_spider: Parsed data in badly structured HTML table.
 6. ajax_spider: Extracts quotes from dynamically loaded content
+7. scroll_spider: Extracts data from infinitely scrolling web page
